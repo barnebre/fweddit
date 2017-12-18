@@ -10,12 +10,12 @@ CORPORATIONID = 98114328
 #ALLIANCE = 1354830081
 import logging
 from datetime import datetime
-import dateutil.parser
+#import dateutil.parser
 from AuthHelper import esi
 class Kill():
     def __init__(self, rawkill):
         self.killid = rawkill['package']['killID']
-        self.killtime = dateutil.parser.parse(rawkill['package']['killmail']['killmail_time'])#, 'YYYY-MM-DDTHH:mm:ssZ')
+        #self.killtime = dateutil.parser.parse(rawkill['package']['killmail']['killmail_time'])#, 'YYYY-MM-DDTHH:mm:ssZ')
         self.attackers = rawkill['package']['killmail']['attackers']
         self.victim = rawkill['package']['killmail']['victim']
         self.value = rawkill['package']['zkb']['totalValue']
