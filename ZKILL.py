@@ -3,25 +3,22 @@ Created on Dec 16, 2017
 
 @author: Brent
 '''
-
-ALLIANCE = 1900696668
-CORPORATIONID = 98114328
-# ALLIANCE = 99002172
-#ALLIANCE = 1354830081
 import logging
 import datetime
-from AuthHelper import esi
-from AuthHelper import CharESI
+from AuthHelper import esi,CharESI,Globals
 class Kill():
     def __init__(self, rawkill):
         self.killid = rawkill['package']['killID']
-        #self.killtime = dateutil.parser.parse(rawkill['package']['killmail']['killmail_time'])#, 'YYYY-MM-DDTHH:mm:ssZ')
         self.attackers = rawkill['package']['killmail']['attackers']
         self.victim = rawkill['package']['killmail']['victim']
         self.value = rawkill['package']['zkb']['totalValue']
-
+        self.shipID = self.victim['ship_type_id']
+    def isKillCapsule(self):
+        if self.shipID == 670 or self.shipID == 33328:
+            return True
+        return False
     def VictimInFweddit(self):
-        if self.victim['corporation_id']== CORPORATIONID:
+        if self.victim['corporation_id']== Globals.CORPORATIONID:
             return True
         else:
             return False
@@ -30,7 +27,7 @@ class Kill():
             return False
         for attacker in self.attackers:
             if 'corporation_id' in attacker:
-                if attacker['corporation_id'] == CORPORATIONID:
+                if attacker['corporation_id'] == Globals.CORPORATIONID:
                     return True
         return False
 
@@ -47,7 +44,25 @@ def RecentLastKill(CharID):
             return False
     except:
         return False
-
+    
+def CheckKillMail(killRec):
+    if killRec.isKillCapsule():
+        continue
+    if killRec.VictimInFweddit():
+        print("Victim in fweddit")
+        logging.info("Victim in fweddit")
+        continue
+    if not killRec.attackerInFweddit():
+        continue
+    charVict = CharESI.GetChar(killRec.victim['character_id'])
+    if(not RecentLastKill(charVict.strCharID)):
+        continue
+    if(charVict.dtBirthdate > (datetime.datetime.now() - datetime.timedelta(days=365)).date()):
+        continue
+    print("Sending message to {0}".format(charVict.strCharID))
+    logging.info("Sending message to {0}".format(charVict.strCharID))
+    ESIHandler.ESIMail(charVict.strCharID)
+    
 if __name__ == '__main__':
     import requests
     print("running...")
@@ -60,6 +75,9 @@ if __name__ == '__main__':
                 k = Kill(r)
             except TypeError:
                 continue
+        
+        if k.isKillCapsule():
+            continue
         if k.VictimInFweddit():
             print("Victim in fweddit")
             logging.info("Victim in fweddit")

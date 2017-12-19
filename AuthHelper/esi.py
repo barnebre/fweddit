@@ -1,16 +1,12 @@
 from AuthHelper.Mail import SendMail
 from pyswagger import App
-from esipy import EsiClient
-from esipy import EsiSecurity
+from esipy import EsiClient,EsiSecurity
 from datetime import datetime
 import time
 from AuthHelper import Globals
 class ESILogger():
     def __init__(self):
         self.app = App.create(url=Globals.CCPESIURL)
-    
-    # replace the redirect_uri, client_id and secret_key values
-    # with the values you get from the STEP 1 !
     def ESIMail(self,KilledCharID):
         security = EsiSecurity(
             app=self.app,
@@ -19,7 +15,6 @@ class ESILogger():
             secret_key=Globals.SECRETKEY,
         )
         
-        # and the client object, replace the header user agent value with something reliable !
         client = EsiClient(
             retry_requests=True,
             header={'User-Agent': ''},

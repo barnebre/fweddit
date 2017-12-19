@@ -15,3 +15,5 @@ TOKENREFRESHKEY = "refresh_token"
 TOKENEXPIRESKEY = "expires_in"
 ESIGETCHARINFO = "https://esi.tech.ccp.is/latest/characters/{0}"
 SUCCESSRESPONSECODE = 201
+ALLIANCE = 1900696668
+CORPORATIONID = 98114328

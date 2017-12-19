@@ -4,7 +4,6 @@ Created on Dec 18, 2017
 @author: Brent
 '''
 import requests
-import simplejson
 from AuthHelper import Globals
 import datetime
 
