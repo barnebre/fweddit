@@ -1,6 +1,6 @@
 from AuthHelper.Mail import SendMail
 from pyswagger import App
-from esipy import EsiClient,EsiSecurity
+from esipy import EsiSecurity
 from datetime import datetime
 import time
 from AuthHelper import GlobalConsts
