@@ -6,6 +6,7 @@ Created on Dec 16, 2017
 import logging
 import datetime
 from AuthHelper import esi,CharESI,Globals
+from threading import Thread
 class Kill():
     def __init__(self, rawkill):
         self.killid = rawkill['package']['killID']
@@ -47,18 +48,18 @@ def RecentLastKill(CharID):
     
 def CheckKillMail(killRec):
     if killRec.isKillCapsule():
-        continue
+        return
     if killRec.VictimInFweddit():
         print("Victim in fweddit")
         logging.info("Victim in fweddit")
-        continue
+        return
     if not killRec.attackerInFweddit():
-        continue
+        return
     charVict = CharESI.GetChar(killRec.victim['character_id'])
     if(not RecentLastKill(charVict.strCharID)):
-        continue
+        return
     if(charVict.dtBirthdate > (datetime.datetime.now() - datetime.timedelta(days=365)).date()):
-        continue
+        return
     print("Sending message to {0}".format(charVict.strCharID))
     logging.info("Sending message to {0}".format(charVict.strCharID))
     ESIHandler.ESIMail(charVict.strCharID)
@@ -72,25 +73,12 @@ if __name__ == '__main__':
         r = requests.get('https://redisq.zkillboard.com/listen.php').json()
         if r:
             try:
-                k = Kill(r)
+                killReq = Kill(r)
             except TypeError:
                 continue
+        #Maybe thread later to catch all kills, zkill call in check kill mail can take some time allowing kills to be missed
+        #Thread(target= CheckKillMail(killReq))
+        CheckKillMail(killReq)
         
-        if k.isKillCapsule():
-            continue
-        if k.VictimInFweddit():
-            print("Victim in fweddit")
-            logging.info("Victim in fweddit")
-            continue
-        if not k.attackerInFweddit():
-            continue
-        charVict = CharESI.GetChar(k.victim['character_id'])
-        if(not RecentLastKill(charVict.strCharID)):
-            continue
-        if(charVict.dtBirthdate > (datetime.datetime.now() - datetime.timedelta(days=365)).date()):
-            continue
-        print("Sending message to {0}".format(k.victim['character_id']))
-        logging.info("Sending message to {0}".format(k.victim['character_id']))
-        ESIHandler.ESIMail(k.victim['character_id'])
             
             
