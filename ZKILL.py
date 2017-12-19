@@ -9,9 +9,9 @@ CORPORATIONID = 98114328
 # ALLIANCE = 99002172
 #ALLIANCE = 1354830081
 import logging
-from datetime import datetime
-#import dateutil.parser
+import datetime
 from AuthHelper import esi
+from AuthHelper import CharESI
 class Kill():
     def __init__(self, rawkill):
         self.killid = rawkill['package']['killID']
@@ -26,6 +26,8 @@ class Kill():
         else:
             return False
     def attackerInFweddit(self):
+        if (len(self.attackers) > 100):
+            return False
         for attacker in self.attackers:
             if 'corporation_id' in attacker:
                 if attacker['corporation_id'] == CORPORATIONID:
@@ -33,13 +35,24 @@ class Kill():
         return False
 
     def isOldKill(self):
-        return self.killtime < datetime.now + datetime.timedelta(hours=12)
+        return self.killtime < datetime.datetime.now() - datetime.timedelta(hours=12)
+def RecentLastKill(CharID):
+    try:
+        zkill = requests.get("https://zkillboard.com/api/kills/characterID/{}/".format(CharID), timeout=5)
+        zkill = zkill.json()
+        lastkill = datetime.date(*[int(item) for item in zkill[0]['killmail_time'].split('T')[0].split('-')])
+        if(lastkill > (datetime.datetime.now() - datetime.timedelta(days=7)).date()):
+            return True
+        else:
+            return False
+    except:
+        return False
 
 if __name__ == '__main__':
     import requests
     print("running...")
     logging.info("running...")
-    ESIMailer = esi.ESILogger()
+    ESIHandler = esi.ESILogger()
     while True:
         r = requests.get('https://redisq.zkillboard.com/listen.php').json()
         if r:
@@ -51,8 +64,15 @@ if __name__ == '__main__':
             print("Victim in fweddit")
             logging.info("Victim in fweddit")
             continue
-        if k.attackerInFweddit():
-            print("Sending message to {0}".format(k.victim['character_id']))
-            logging.info("Sending message to {0}".format(k.victim['character_id']))
-            ESIMailer.ESIMail(k.victim['character_id'])
+        if not k.attackerInFweddit():
+            continue
+        charVict = CharESI.GetChar(k.victim['character_id'])
+        if(not RecentLastKill(charVict.strCharID)):
+            continue
+        if(charVict.dtBirthdate > (datetime.datetime.now() - datetime.timedelta(days=365)).date()):
+            continue
+        print("Sending message to {0}".format(k.victim['character_id']))
+        logging.info("Sending message to {0}".format(k.victim['character_id']))
+        ESIHandler.ESIMail(k.victim['character_id'])
+            
             
