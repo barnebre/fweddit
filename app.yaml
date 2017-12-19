@@ -1,7 +1,7 @@
-runtime: python
-env: flex
-entrypoint: python ZKILL.py
+runtime: python27
+api_version: 1
+threadsafe: true
 
-runtime_config:
-  # You can also specify 2 for Python 2.7
-  python_version: 3
+handlers:
+- url: /.*
+  script: ZKILL.app

@@ -1,0 +1,7 @@
+runtime: python
+env: flex
+entrypoint: python ZKILL.py
+
+runtime_config:
+  # You can also specify 2 for Python 2.7
+  python_version: 3

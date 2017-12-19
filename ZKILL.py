@@ -27,18 +27,21 @@ class Kill():
         if (len(self.attackers) > 100):
             return False
         for attacker in self.attackers:
-            if 'corporation_id' in attacker:
-                if attacker['corporation_id'] == Globals.CORPORATIONID:
+            if "corporation_id" in attacker:
+                if attacker["corporation_id"] == Globals.CORPORATIONID:
                     return True
         return False
-
+    def killIsCharacter(self):
+        if self.victim.has_key("character_id"):
+            return True
+        return False
     def isOldKill(self):
         return self.killtime < datetime.datetime.now() - datetime.timedelta(hours=12)
 def RecentLastKill(CharID):
     try:
-        zkill = requests.get("https://zkillboard.com/api/kills/characterID/{}/".format(CharID), timeout=5)
-        zkill = zkill.json()
-        lastkill = datetime.date(*[int(item) for item in zkill[0]['killmail_time'].split('T')[0].split('-')])
+        arZkills = requests.get("https://zkillboard.com/api/kills/characterID/{}/limit/1/".format(CharID), timeout=5)
+        arZkills = arZkills.json()
+        lastkill = datetime.date(*[int(item) for item in arZkills[0]['killmail_time'].split('T')[0].split('-')])
         if(lastkill > (datetime.datetime.now() - datetime.timedelta(days=7)).date()):
             return True
         else:
@@ -47,22 +50,28 @@ def RecentLastKill(CharID):
         return False
     
 def CheckKillMail(killRec):
-    if killRec.isKillCapsule():
+    try:
+        charVict = CharESI.GetChar(killRec.victim['character_id']+1)
+        if killRec.killIsCharacter():
+            return 
+        if killRec.isKillCapsule():
+            return
+        if killRec.VictimInFweddit():
+            print("Victim in fweddit")
+            logging.info("Victim in fweddit")
+            return
+        if not killRec.attackerInFweddit():
+            return
+        charVict = CharESI.GetChar(killRec.victim['character_id'])
+        if(not RecentLastKill(charVict.strCharID)):
+            return
+        if(charVict.dtBirthdate > (datetime.datetime.now() - datetime.timedelta(days=365)).date()):
+            return
+        print("Sending message to {0}".format(charVict.strCharID))
+        logging.info("Sending message to {0}".format(charVict.strCharID))
+        ESIHandler.ESIMail(charVict.strCharID)
+    except:
         return
-    if killRec.VictimInFweddit():
-        print("Victim in fweddit")
-        logging.info("Victim in fweddit")
-        return
-    if not killRec.attackerInFweddit():
-        return
-    charVict = CharESI.GetChar(killRec.victim['character_id'])
-    if(not RecentLastKill(charVict.strCharID)):
-        return
-    if(charVict.dtBirthdate > (datetime.datetime.now() - datetime.timedelta(days=365)).date()):
-        return
-    print("Sending message to {0}".format(charVict.strCharID))
-    logging.info("Sending message to {0}".format(charVict.strCharID))
-    ESIHandler.ESIMail(charVict.strCharID)
     
 if __name__ == '__main__':
     import requests
