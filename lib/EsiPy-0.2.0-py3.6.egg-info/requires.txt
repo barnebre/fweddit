@@ -1,5 +1,0 @@
-requests
-pyswagger>=0.8.31
-six
-pytz
-futures
