@@ -4,7 +4,7 @@ Created on Dec 16, 2017
 @author: Brent
 '''
 import requests
-import simplejson
+import json
 strMailURL="https://esi.tech.ccp.is/latest/characters/{0}/mail/?datasource=tranquility&token={1}"
 def SendMail(strCharacterID,strRecipientId,strMessage,strToken):
     dictPayload = {
@@ -21,4 +21,4 @@ def SendMail(strCharacterID,strRecipientId,strMessage,strToken):
     dictPayload["recipients"][-1]["recipient_id"] = strRecipientId
     dictPayload["body"] = strMessage
     strMailCharURL = strMailURL.format(strCharacterID,strToken)
-    return requests.post(strMailCharURL,data=simplejson.dumps(dictPayload))
+    return requests.post(strMailCharURL,data=json.dumps(dictPayload))

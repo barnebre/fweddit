@@ -53,8 +53,6 @@ def RecentLastKill(CharID):
     
 def CheckKillMail(killRec):
     try:
-        if(not RecentLastKill(killRec.victim['character_id'])):
-            return
         if killRec.isKillCapsule():
             return
         if killRec.VictimInFweddit():

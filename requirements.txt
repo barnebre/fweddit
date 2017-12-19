@@ -1,5 +1,4 @@
-pyswagger==0.8.36
-simplejson==3.13.2
 EsiPy==0.2.0
 requests==2.18.4
+pyswagger==0.8.36
 protobuf==3.5.0.post1
