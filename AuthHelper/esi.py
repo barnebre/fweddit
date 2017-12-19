@@ -3,37 +3,33 @@ from pyswagger import App
 from esipy import EsiClient,EsiSecurity
 from datetime import datetime
 import time
-from AuthHelper import Globals
+from AuthHelper import GlobalConsts
 class ESILogger():
     def __init__(self):
-        self.app = App.create(url=Globals.CCPESIURL)
+        self.app = App.create(url=GlobalConsts.CCPESIURL)
     def ESIMail(self,KilledCharID):
         security = EsiSecurity(
             app=self.app,
             redirect_uri='http://localhost/callback/',
-            client_id=Globals.CLIENTID,
-            secret_key=Globals.SECRETKEY,
+            client_id=GlobalConsts.CLIENTID,
+            secret_key=GlobalConsts.SECRETKEY,
         )
-        
-        client = EsiClient(
-            retry_requests=True,
-            header={'User-Agent': ''},
-            security=security
-        )
-        print (security.get_auth_uri(scopes=Globals.REQUESTSCOPES))
+        print (security.get_auth_uri(scopes=GlobalConsts.REQUESTSCOPES))
         try:
-            tokens = security.auth(Globals.CHARAUTHTOKEN)
+            tokens = security.auth(GlobalConsts.CHARAUTHTOKEN)
         except:
-            security.refresh_token = Globals.CHARREFRESHTOKEN
+            security.refresh_token = GlobalConsts.CHARREFRESHTOKEN
             tokens = security.refresh()
-        accessToken = tokens[Globals.TOKENAUTHKEY]
-        RefreshToken = tokens[Globals.TOKENREFRESHKEY]
-        expire_date = datetime.fromtimestamp(time.time() + tokens[Globals.TOKENEXPIRESKEY],)
+        accessToken = tokens[GlobalConsts.TOKENAUTHKEY]
+        RefreshToken = tokens[GlobalConsts.TOKENREFRESHKEY]
+        expire_date = datetime.fromtimestamp(time.time() + tokens[GlobalConsts.TOKENEXPIRESKEY],)
         api_info = security.verify()
         strCharacterID=api_info['CharacterID']
-        Response = SendMail(strCharacterID, KilledCharID, Globals.DEFAULTMESSAGE, accessToken)
-        if Response.status_code == Globals.SUCCESSRESPONSECODE:
+        Response = SendMail(strCharacterID, KilledCharID, GlobalConsts.DEFAULTMESSAGE, accessToken)
+        if Response.status_code == GlobalConsts.SUCCESSRESPONSECODE:
             print("Sent message to characterid {0}".format(KilledCharID))
+        else:
+            print("Failed to send message to characterid {0}".format(KilledCharID))
 if __name__ == '__main__':
     ESIMAIL = ESILogger()
     ESIMAIL.ESIMail(2113570501)
